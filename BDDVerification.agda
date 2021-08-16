@@ -4,8 +4,8 @@ open import AgdaAsciiPrelude.AsciiPrelude
 
 open import Category.Monad
 open RawMonad {{...}} public
-open import Category.Applicative.Indexed renaming (_⊛_ to _<*>_)
-
+open import Category.Applicative
+open RawApplicative {{...}} renaming (_⊛_ to _<*>_)
 
 private variable
   l l' l1 l2 l3 : Level
@@ -15,7 +15,7 @@ private variable
 UnitCon : Set (lsuc l ~U~ lsuc l')
 UnitCon {l = l} {l' = l'} = Set l -> Set l'
 
-record MonadVar (M : UnitCon {l} {l}) {{mon : RawMonad M}} (V : UnitCon {l} {l}) : Set (lsuc l) where
+record MonadVar (M : UnitCon {l} {l}) {{mon : RawMonad M}} {{apl : RawApplicative M}} (V : UnitCon {l} {l}) : Set (lsuc l) where
   field
     new : A -> M (V A)
     modify : V A -> (A -> A and B) -> M B
@@ -27,7 +27,7 @@ record MonadVar (M : UnitCon {l} {l}) {{mon : RawMonad M}} (V : UnitCon {l} {l})
   write p x = modify p (\ _ -> x , top)
 
   _<*>>_ : M (A -> B) -> V A -> M B
-  _<*>>_ m p = read p <*> m
+  _<*>>_ m p = m <*> read p
 
 open MonadVar {{...}} public
 
