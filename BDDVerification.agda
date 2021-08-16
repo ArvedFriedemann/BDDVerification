@@ -2,6 +2,11 @@ module BDDVerification where
 
 open import AgdaAsciiPrelude.AsciiPrelude
 
+open import Category.Monad
+open RawMonad {{...}} public
+open import Category.Applicative.Indexed renaming (_⊛_ to _<*>_)
+
+
 private variable
   l l' l1 l2 l3 : Level
   A B C D : Set l
@@ -10,7 +15,7 @@ private variable
 UnitCon : Set (lsuc l ~U~ lsuc l')
 UnitCon {l = l} {l' = l'} = Set l -> Set l'
 
-record MonadVar (M : UnitCon {l} {l}) (V : UnitCon {l} {l}) : Set (lsuc l) where
+record MonadVar (M : UnitCon {l} {l}) {{mon : RawMonad M}} (V : UnitCon {l} {l}) : Set (lsuc l) where
   field
     new : A -> M (V A)
     modify : V A -> (A -> A and B) -> M B
@@ -21,14 +26,12 @@ record MonadVar (M : UnitCon {l} {l}) (V : UnitCon {l} {l}) : Set (lsuc l) where
   write : V A -> A -> M T
   write p x = modify p (\ _ -> x , top)
 
+  _<*>>_ : M (A -> B) -> V A -> M B
+  _<*>>_ m p = read p <*> m
+
 open MonadVar {{...}} public
 
-{-
-sth : {_ : MonadVar M V} -> M T
-sth = do
-  x <- new --new mv
-  k <- read x
--}
+
 --wieso nicht: write : V A -> A -> M () ? weil () in Agda was anderes ist als in Haskell. Das () in Haskell hei-t hier T
 --warum auch immer O_0 -> () ist das absurd-pattern. Das wird benutzt wenn es irgendwo keinen Wert geben kann.
 
